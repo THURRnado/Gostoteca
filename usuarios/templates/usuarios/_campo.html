@@ -4,7 +4,7 @@
   </label>
   {{ campo }}
   {% if campo.help_text %}
-    <p class="mt-1 text-xs text-slate-500">{{ campo.help_text|safe }}</p>
+    <div class="mt-1 text-xs text-slate-500">{{ campo.help_text|safe }}</div>
   {% endif %}
   {% for erro in campo.errors %}
     <p class="mt-1 text-sm text-red-600">{{ erro }}</p>
