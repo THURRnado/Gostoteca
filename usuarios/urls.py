@@ -1,6 +1,7 @@
 from django.contrib.auth.views import LoginView
 from django.urls import path
 
+from . import views
 from .forms import LoginForm
 
 urlpatterns = [
@@ -13,4 +14,5 @@ urlpatterns = [
         ),
         name='login',
     ),
+    path('cadastro/', views.CadastroView.as_view(), name='cadastro'),
 ]

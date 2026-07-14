@@ -80,3 +80,16 @@ class LoginViewTest(TestCase):
 
         self.assertEqual(resposta.status_code, 200)
         self.assertNotIn('_auth_user_id', self.client.session)
+
+
+class CadastroViewTest(TestCase):
+    def test_get_cadastro_retorna_200(self):
+        resposta = self.client.get('/cadastro/')
+
+        self.assertEqual(resposta.status_code, 200)
+
+    def test_post_valido_cria_usuario_e_redireciona_para_login(self):
+        resposta = self.client.post('/cadastro/', data=DADOS_VALIDOS)
+
+        self.assertRedirects(resposta, '/login/')
+        self.assertTrue(Usuario.objects.filter(username='arthur').exists())

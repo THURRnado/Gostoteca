@@ -1,28 +1,22 @@
 {% extends 'usuarios/base.html' %}
 
-{% block titulo %}Entrar — Gostoteca{% endblock %}
+{% block titulo %}Criar conta — Gostoteca{% endblock %}
 
 {% block conteudo %}
 <main class="w-full max-w-sm bg-white rounded-xl shadow-sm p-8">
-  <h1 class="text-2xl font-semibold text-slate-900 mb-6">Entrar</h1>
-
-  {% if form.non_field_errors %}
-    <div class="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">
-      {% for erro in form.non_field_errors %}<p>{{ erro }}</p>{% endfor %}
-    </div>
-  {% endif %}
+  <h1 class="text-2xl font-semibold text-slate-900 mb-6">Criar conta</h1>
 
   <form method="post" class="space-y-4">
     {% csrf_token %}
     {% for campo in form %}{% include 'usuarios/_campo.html' %}{% endfor %}
     <button type="submit"
             class="w-full rounded-lg bg-slate-900 py-2 font-medium text-white hover:bg-slate-700">
-      Entrar
+      Cadastrar
     </button>
   </form>
 
   <p class="mt-6 text-center text-sm text-slate-600">
-    Não tem conta? <a href="{% url 'cadastro' %}" class="text-slate-900 underline">Cadastre-se</a>
+    Já tem conta? <a href="{% url 'login' %}" class="text-slate-900 underline">Entrar</a>
   </p>
 </main>
 {% endblock %}
