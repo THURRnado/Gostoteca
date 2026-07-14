@@ -46,3 +46,37 @@ class UsuarioCreationFormTest(TestCase):
         self.assertFalse(form.is_valid())
         self.assertIn('email', form.errors)
         self.assertEqual(Usuario.objects.count(), 1)
+
+
+class LoginViewTest(TestCase):
+    def setUp(self):
+        Usuario.objects.create_user(
+            username='arthur',
+            email='arthur@example.com',
+            password='senha-forte-123',
+        )
+
+    def test_get_login_retorna_200(self):
+        resposta = self.client.get('/login/')
+
+        self.assertEqual(resposta.status_code, 200)
+
+    def test_login_valido_redireciona_para_catalogo(self):
+        resposta = self.client.post(
+            '/login/',
+            data={'username': 'arthur', 'password': 'senha-forte-123'},
+        )
+
+        # Sem assertRedirects: /catalogo/ ainda nao existe e seria um 404.
+        self.assertEqual(resposta.status_code, 302)
+        self.assertEqual(resposta.url, '/catalogo/')
+        self.assertIn('_auth_user_id', self.client.session)
+
+    def test_login_invalido_retorna_200_sem_criar_sessao(self):
+        resposta = self.client.post(
+            '/login/',
+            data={'username': 'arthur', 'password': 'senha-errada'},
+        )
+
+        self.assertEqual(resposta.status_code, 200)
+        self.assertNotIn('_auth_user_id', self.client.session)
