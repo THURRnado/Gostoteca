@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Ambiente virtual
+venv/
+.venv/
+env/
+
+# Django
+db.sqlite3
+db.sqlite3-journal
+*.log
+staticfiles/
+
+# Arquivos enviados por usuarios (a pasta permanece, o conteudo nao)
+media/*
+!media/.gitkeep
+
+# Variaveis de ambiente
+.env
+
+# Editores
+.vscode/
+.idea/
+*.swp
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
