@@ -86,6 +86,7 @@ AUTH_USER_MODEL = 'usuarios.Usuario'
 
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = '/catalogo/'  # Caminho literal: o app catalogo ainda nao existe.
+LOGOUT_REDIRECT_URL = 'login'
 
 
 # Password validation

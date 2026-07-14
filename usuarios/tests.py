@@ -93,3 +93,25 @@ class CadastroViewTest(TestCase):
 
         self.assertRedirects(resposta, '/login/')
         self.assertTrue(Usuario.objects.filter(username='arthur').exists())
+
+
+class LogoutViewTest(TestCase):
+    def setUp(self):
+        Usuario.objects.create_user(
+            username='arthur',
+            email='arthur@example.com',
+            password='senha-forte-123',
+        )
+        self.client.login(username='arthur', password='senha-forte-123')
+
+    def test_logout_por_post_encerra_sessao_e_redireciona_para_login(self):
+        resposta = self.client.post('/logout/')
+
+        self.assertRedirects(resposta, '/login/')
+        self.assertNotIn('_auth_user_id', self.client.session)
+
+    def test_logout_por_get_retorna_405(self):
+        resposta = self.client.get('/logout/')
+
+        self.assertEqual(resposta.status_code, 405)
+        self.assertIn('_auth_user_id', self.client.session)
