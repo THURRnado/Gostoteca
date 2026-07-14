@@ -13,7 +13,13 @@ O projeto já tem:
 - Migração inicial aplicada; `Usuario` registrado no admin via `UserAdmin`.
 - `gostoteca/urls.py` contém apenas `admin/`. Não existe home page.
 
-Este design cobre os critérios da Seção 5 do documento da atividade: *"Cadastro, login e logout; senha com hash; rotas protegidas exigem login."*
+O critério da Seção 5 do documento da atividade é: *"Cadastro, login e logout; senha com hash; rotas protegidas exigem login."*
+
+Este design cobre **três dos quatro**: cadastro, login e logout, com senha em hash.
+
+**"Rotas protegidas exigem login" fica explicitamente adiado**, porque hoje não existe rota protegível: o app `catalogo` não foi escrito, e proteger `/login/` ou `/cadastro/` seria absurdo. O `LOGIN_URL` configurado aqui é o enabler — hoje ele não é consumido por nada.
+
+**Pendência para a branch do `catalogo`:** aplicar `LoginRequiredMixin` na primeira view do catálogo e adicionar um teste do tipo "anônimo em `/catalogo/` → 302 para `/login/?next=/catalogo/`". Sem isso, o quarto critério da Seção 5 fica sem implementação e sem teste na entrega.
 
 ## Decisões tomadas
 
@@ -105,7 +111,7 @@ LOGOUT_REDIRECT_URL = 'login'
 
 ## Testes (`usuarios/tests.py`)
 
-Sete testes, cobrindo a Seção 6 do documento:
+Estes sete testes cobrem a Seção 6 do documento:
 
 1. Cadastro válido cria o usuário e `check_password()` confirma o hash da senha.
 2. Cadastro com email duplicado é rejeitado e não cria usuário.
@@ -115,7 +121,11 @@ Sete testes, cobrindo a Seção 6 do documento:
 6. `POST /logout/` retorna 302 para `/login/`.
 7. `GET /logout/` retorna 405.
 
-Esses testes fazem o `manage.py test` do CI deixar de passar trivialmente (hoje: "Found 0 test(s)").
+**A implementação entregou 10.** Os três a mais apareceram ao decompor o plano em tarefas: `GET /login/` → 200, `GET /cadastro/` → 200 (ambos pegam `NoReverseMatch` em template) e a verificação de que o login inválido não cria sessão.
+
+Esses testes fazem o `manage.py test` do CI deixar de passar trivialmente (antes: "Found 0 test(s)").
+
+**Lacuna conhecida:** não há teste de username duplicado, embora a tabela de tratamento de erros acima o liste. O comportamento está correto (o `unique` do `AbstractUser` rejeita), mas não há teste travando isso.
 
 ## Fora de escopo
 
