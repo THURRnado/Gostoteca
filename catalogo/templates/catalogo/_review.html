@@ -1,0 +1,25 @@
+<article class="rounded-xl border border-areia bg-white p-4">
+  <div class="flex items-start justify-between gap-3">
+    <div>
+      <p class="font-display font-semibold text-cacau">{{ review.usuario }}</p>
+      <p class="mt-0.5 text-sm font-semibold text-ferrugem">
+        {{ review.nota }}<span class="font-normal text-ferrugem/60">/10</span>
+      </p>
+    </div>
+
+    {% if review.usuario == user or user.is_staff %}
+      <div class="flex shrink-0 gap-3 text-xs">
+        {% if review.usuario == user %}
+          <a href="{% url 'catalogo:review_editar' review.pk %}"
+             class="font-medium text-ferrugem underline underline-offset-4">Editar</a>
+        {% endif %}
+        <a href="{% url 'catalogo:review_excluir' review.pk %}"
+           class="font-medium text-red-700 underline underline-offset-4">Excluir</a>
+      </div>
+    {% endif %}
+  </div>
+
+  {% if review.opiniao %}
+    <p class="mt-3 leading-relaxed text-cacau/90">{{ review.opiniao }}</p>
+  {% endif %}
+</article>

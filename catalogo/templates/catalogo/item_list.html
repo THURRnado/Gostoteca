@@ -38,7 +38,10 @@
               <h2 class="mt-2 font-display text-lg font-semibold leading-tight text-cacau group-hover:text-ferrugem">
                 {{ item.titulo }}
               </h2>
-              <p class="mt-0.5 text-sm text-ferrugem/80">{{ item.ano }}</p>
+              <p class="mt-0.5 text-sm text-ferrugem/80">
+                {{ item.ano }} ·
+                {{ item.num_reviews }} {% if item.num_reviews == 1 %}avaliação{% else %}avaliações{% endif %}
+              </p>
             </div>
           </a>
         </li>

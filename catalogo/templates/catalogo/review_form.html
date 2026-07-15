@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block titulo %}{% if object %}Editar avaliação{% else %}Avaliar{% endif %} {{ item.titulo }} — Gostoteca{% endblock %}
+
+{% block conteudo %}
+<main class="mx-auto max-w-2xl p-6">
+  <a href="{{ item.get_absolute_url }}"
+     class="text-sm font-medium text-ferrugem underline decoration-ambar/50 underline-offset-4 hover:text-cacau">
+    ← Voltar para {{ item.titulo }}
+  </a>
+
+  <h1 class="mt-4 mb-6 font-display text-3xl font-semibold tracking-tight text-cacau">
+    {% if object %}Editar minha avaliação{% else %}Avaliar {{ item.titulo }}{% endif %}
+  </h1>
+
+  <form method="post" class="space-y-4 rounded-xl border border-areia bg-white p-6 shadow-sm">
+    {% csrf_token %}
+    {% for campo in form %}{% include '_campo.html' %}{% endfor %}
+    <div class="flex gap-3 border-t border-areia pt-5">
+      <button type="submit"
+              class="rounded-lg bg-cacau px-5 py-2 font-semibold text-areia transition-colors hover:bg-ferrugem">
+        Salvar
+      </button>
+      <a href="{{ item.get_absolute_url }}"
+         class="rounded-lg px-4 py-2 font-medium text-ferrugem transition-colors hover:bg-areia/40">Cancelar</a>
+    </div>
+  </form>
+</main>
+{% endblock %}

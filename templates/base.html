@@ -63,6 +63,11 @@
 
         <span class="text-sm text-areia/70">{{ user.username }}</span>
 
+        <a href="{% url 'conta_excluir' %}"
+           class="text-sm font-medium text-areia/70 underline decoration-ambar/60 underline-offset-4 hover:text-areia">
+          Excluir conta
+        </a>
+
         <form method="post" action="{% url 'logout' %}">
           {% csrf_token %}
           <button type="submit"

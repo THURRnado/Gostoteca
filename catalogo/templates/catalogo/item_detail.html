@@ -42,6 +42,33 @@
           </a>
         </div>
       {% endif %}
+
+      <section class="mt-8 border-t border-areia pt-6">
+        <div class="mb-4 flex items-center justify-between gap-4">
+          <h2 class="font-display text-xl font-semibold text-cacau">
+            Avaliações <span class="text-ferrugem/60">({{ reviews|length }})</span>
+          </h2>
+          {% if minha_review %}
+            <a href="{% url 'catalogo:review_editar' minha_review.pk %}"
+               class="shrink-0 rounded-lg border border-cacau px-4 py-2 text-sm font-semibold text-cacau transition-colors hover:bg-areia/40">
+              Editar minha avaliação
+            </a>
+          {% else %}
+            <a href="{% url 'catalogo:avaliar' object.pk %}"
+               class="shrink-0 rounded-lg bg-cacau px-4 py-2 text-sm font-semibold text-areia transition-colors hover:bg-ferrugem">
+              Avaliar
+            </a>
+          {% endif %}
+        </div>
+
+        {% if reviews %}
+          <div class="space-y-3">
+            {% for review in reviews %}{% include 'catalogo/_review.html' %}{% endfor %}
+          </div>
+        {% else %}
+          <p class="text-sm text-ferrugem">Ninguém avaliou este item ainda.</p>
+        {% endif %}
+      </section>
     </div>
   </article>
 </main>

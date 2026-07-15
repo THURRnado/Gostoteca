@@ -21,9 +21,10 @@ media/*
 # Variaveis de ambiente
 .env
 
-# Editores
+# Editores e ferramentas
 .vscode/
 .idea/
+.claude/
 *.swp
 
 # Sistema operacional

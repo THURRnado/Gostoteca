@@ -1,8 +1,8 @@
 # Resumo da sessão — 2026-07-14
 
-Registro do que foi decidido e construído na sessão que partiu do documento da Atividade 03 e chegou até a primeira fatia do catálogo com identidade visual aplicada. Serve de matéria-prima para o relatório final e de memória das decisões que não são óbvias olhando só o código.
+Registro do que foi decidido e construído na sessão que partiu do documento da Atividade 03 e chegou ao CRUD completo — usuário, item e review — com identidade visual aplicada. Serve de matéria-prima para o relatório final e de memória das decisões que não são óbvias olhando só o código.
 
-As seções 1 a 11 são o registro de decisões. A seção 15, no fim, traz o diálogo da sessão em ordem cronológica.
+As seções 1 a 16 são o registro de decisões. A seção 17, no fim, traz o diálogo da sessão em ordem cronológica.
 
 ---
 
@@ -151,16 +151,22 @@ O CSRF foi verificado com `Client(enforce_csrf_checks=True)` — o test client d
 
 Em ordem de importância para a nota:
 
-1. **O `.docx` está defasado em cinco pontos.** Bootstrap→Tailwind; qualquer usuário cria itens; `capa_url` texto→upload; "remoção de item em uso é bloqueada" não implementado; `papel` via Group→`is_staff`. Corrigir o documento ou registrar tudo no relatório. **A quarta é a que custa nota:** é um critério escrito da Seção 5 que ficará sem implementação e sem teste (ver seção 12).
-2. **Falta teste de username duplicado.** O comportamento está correto, mas sem teste — e a tabela de erros do spec o lista. São 6 linhas.
-3. **`cadastro.html` não tem o bloco de `non_field_errors`** que o `login.html` tem. Inofensivo hoje (os erros do `UserCreationForm` são todos de campo), mas um `clean()` futuro falharia em silêncio.
-4. **Superusuário ainda não criado** (`python manage.py createsuperuser`).
-5. **`.gitattributes`** para normalizar LF/CRLF, se o André estiver em Linux ou macOS.
-6. **`TIME_ZONE` está `America/Sao_Paulo`**; o fuso canônico da Paraíba é `America/Fortaleza`. Mesmo UTC−3, histórias de horário de verão diferentes. Cosmético.
-7. **`docker compose up` nunca foi testado.** O `docker compose config` valida, mas a imagem nunca foi construída.
-8. **Fatias 2 e 3 do catálogo** — `Preferencia` e `Comentario` — ainda não começaram.
+1. **O `.docx` está defasado em nove pontos.** Bootstrap→Tailwind; qualquer usuário cria itens; `capa_url` texto→upload; "remoção de item em uso é bloqueada" não implementado; `papel` via Group→`is_staff`; `preferencia`→`review`; `nota` opcional→obrigatória; **modelo `comentario` eliminado**; admin apaga reviews. A lista completa está tabelada no spec da fatia final.
+2. **Dois critérios da Seção 5 ficam sem implementação e sem teste** — e a Seção 6 exige um teste por critério. São "remoção de item em uso é bloqueada" (morto pelo CASCADE) e "usuário comenta a preferência de outro" (morto com o modelo `comentario`). **É o que mais custa nota.** A saída limpa é remover os dois do `.docx`.
+3. **"Usuário comum não acessa a administração" (Seção 5) funciona mas não tem teste.** O Django Admin barra não-staff sozinho; falta travar isso. São ~5 linhas.
+4. **Falta teste de username duplicado.** O comportamento está correto, mas sem teste — e a tabela de erros do spec o lista. São 6 linhas.
+5. **`cadastro.html` não tem o bloco de `non_field_errors`** que o `login.html` tem. Inofensivo hoje (os erros do `UserCreationForm` são todos de campo), mas um `clean()` futuro falharia em silêncio.
+6. **Superusuário ainda não criado** (`python manage.py createsuperuser`).
+7. **`.gitattributes`** para normalizar LF/CRLF, se o André estiver em Linux ou macOS.
+8. **`TIME_ZONE` está `America/Sao_Paulo`**; o fuso canônico da Paraíba é `America/Fortaleza`. Mesmo UTC−3, histórias de horário de verão diferentes. Cosmético.
+9. **`docker compose up` nunca foi testado.** O `docker compose config` valida, mas a imagem nunca foi construída.
+10. **A tela de 404 não tem teste.** Testá-la exigiria `override_settings(DEBUG=False)`. Foi verificada à mão.
 
-**Resolvido durante a sessão:** "rotas protegidas exigem login" (Seção 5) era a pendência número 1 e foi fechada na fatia 1 do catálogo, com `LoginRequiredMixin` nas cinco views e um teste de anônimo → 302 para `/login/?next=`.
+**Resolvido durante a sessão:**
+
+- **"Rotas protegidas exigem login"** (Seção 5) era a pendência número 1 e foi fechada na fatia 1 do catálogo: `LoginRequiredMixin` nas views e um teste de anônimo → 302 para `/login/?next=`.
+- **Exclusão de conta** (Seção 1) não estava em nenhuma fatia e ninguém tinha notado. Entrou na fatia final.
+- **Fatias 2 e 3 do catálogo:** a 2 virou a `Review`; a 3 (`Comentario`) foi eliminada por decisão do usuário.
 
 ## 11. Consequência conhecida — resolvida
 
@@ -246,17 +252,95 @@ A marca (livro aberto com faíscas) vive em `templates/_marca.html` e usa `curre
 
 ## 14. O que o processo pegou
 
-Cinco defeitos que não teriam aparecido sem verificação — vale registrar porque três eram erros meus:
+Sete defeitos que não teriam aparecido sem verificação — vale registrar porque quatro eram erros meus:
 
 1. **`<ul>` dentro de `<p>`.** O `help_text` do `password1` é uma `<ul>`; o partial a envolvia num `<p>`, que é HTML inválido. O navegador quebrava a estrutura e a lista de regras de senha saía sem estilo. **Só apareceu na inspeção do DOM** — os testes não pegariam, e um implementador havia afirmado que o campo era vazio sem ter renderizado.
 2. **Spec mentindo sobre cobertura.** O spec de autenticação afirmava cobrir a Seção 5, mas "rotas protegidas" não estava implementado. Um spec que se declara completo é como esse tipo de item se perde.
 3. **Plano com o baseline errado.** Dizia 8 testes onde eram 10. O subagente **parou e perguntou em vez de adivinhar** — se tivesse seguido, os passos posteriores checariam contagens erradas.
 4. **Lixo declarado como removido.** Um implementador afirmou ter apagado um `.claude/launch.json` e não apagou; a revisão de spec também não pegou. Apareceu num `git status` manual.
 5. **Faíscas invisíveis.** A primeira versão do ícone tinha faíscas de 3 a 4 pixels na navbar — sumiam, e sobrava um livro comum. O código estava "correto" nas duas versões; só a tela mostrou.
+6. **Teste dependendo de uma rota do futuro.** Na fatia final, um teste da Task 3 exercitava um `redirect()` para uma rota criada só na Task 4 — erro de sequenciamento do plano. Eu cheguei a prever o risco e escrever "se falhar, pare e reporte" no prompt do subagente, o que foi **um curativo, não a correção**: o teste pertencia à Task 4. O subagente parou certo.
+7. **Marca do projeto errada.** A navbar dizia "Catálogo" porque o pedido dizia "o nome catálogo ao lado". Eu estranhei — o projeto se chama Gostoteca — e **segui ao pé da letra em vez de perguntar**. O usuário teve que corrigir.
 
-O padrão: **os testes provam comportamento, não aparência nem asseio.** Todo defeito visual e toda sujeira exigiram olhar de fato.
+Dois padrões saem daqui.
 
-## 15. Diálogo da sessão
+**Os testes provam comportamento, não aparência nem asseio.** Todo defeito visual (1, 5) e toda sujeira (4) exigiram olhar de fato.
+
+**Parar e perguntar valeu mais que adivinhar.** Nos casos 3 e 6, subagentes travaram diante de uma discrepância entre o plano e a realidade — e nas duas vezes o plano é que estava errado. No caso 7, eu **não** parei, e devia ter.
+
+## 15. Fatia final — `Review` e exclusão de conta
+
+A última fatia. Encerra o CRUD e o projeto.
+
+### O que mudou em relação ao documento
+
+`preferencia` virou **`Review`**, e a `nota` de 0 a 10 deixou de ser opcional e passou a ser **obrigatória** — a `opiniao` é que ficou opcional. Uma review por usuário por item, via `UniqueConstraint`. O dono do item pode avaliar o próprio item. E o admin ganhou o poder de **apagar** reviews, o que não estava na Seção 5 mas implementa a moderação que a Seção 1 pedia e que estava sem dono.
+
+### O modelo `Comentario` foi eliminado — e o preço disso
+
+Decisão do usuário: a review não tem comentários aninhados. **É a divergência mais cara do projeto.**
+
+A atividade se chama "Aplicação CRUD" e o documento define CRUD sobre **quatro entidades**; foram entregues três. O subtítulo do documento é "catálogo de preferências **com elementos de rede social**", e a Seção 1 descreve o usuário "comentando as preferências de outros" — a parte que some é justamente a que diferencia a aplicação de um catálogo comum.
+
+**Dois critérios da Seção 5 ficam sem implementação e sem teste:** "remoção de item em uso é bloqueada" (morto pelo CASCADE) e "usuário comenta a preferência de outro usuário" (morto com o modelo). A Seção 6 exige um teste por critério.
+
+### A autorização assimétrica
+
+| Ação sobre uma review | Quem pode |
+|---|---|
+| Editar | **Só o dono** — nem o admin |
+| Apagar | Dono ou admin |
+
+O raciocínio do usuário: **moderar é remover, não reescrever a opinião de alguém.**
+
+Isso obrigou a generalizar os mixins. O `DonoOuAdminMixin` tinha `criado_por` cravado, e o dono de uma review é `usuario`:
+
+```python
+class DonoMixin(UserPassesTestMixin):
+    campo_dono = 'criado_por'
+
+    def test_func(self):
+        return getattr(self.get_object(), self.campo_dono) == self.request.user
+
+
+class DonoOuAdminMixin(DonoMixin):
+    def test_func(self):
+        return super().test_func() or self.request.user.is_staff
+```
+
+As views do `Item` não mudaram — herdam o padrão. As da review declaram `campo_dono = 'usuario'` e escolhem o mixin conforme a regra. **O par de testes que trava isso é o mesmo admin recebendo 403 ao editar e 302 ao apagar a mesma review.**
+
+### A armadilha do `UniqueConstraint`
+
+O padrão do projeto é tirar o dono do formulário e preenchê-lo na view, para impedir POST forjado. **Só que isso quebra a validação de unicidade.** O `ModelForm` exclui da validação os campos ausentes do form, e uma restrição composta é pulada **inteira** se qualquer campo dela estiver excluído. Como o `usuario` fica de fora, o `UNIQUE (usuario, item)` nunca é checado no form — e a segunda review viraria `IntegrityError`, um 500 na cara do usuário.
+
+**Solução:** o `dispatch` da view de criar verifica se já existe review e redireciona para a edição. O caso nunca chega ao form, o erro vira navegação útil ("você já avaliou isto, aqui está sua nota"), e o `UniqueConstraint` continua no banco como a garantia real.
+
+Detalhe de teste que morde: um `IntegrityError` dentro de um `TestCase` deixa a transação quebrada e o teardown falha com uma mensagem que não tem nada a ver com o problema. O teste do constraint precisa de `transaction.atomic()` para isolar a falha num savepoint.
+
+### A contagem no card
+
+`annotate(Count('reviews'))` no `get_queryset` da lista. Um `item.reviews.count()` no template viraria N+1 — a lista faz 3 queries hoje, e um catálogo de 30 itens dispararia 33. Mesmo motivo do `select_related('usuario')` no detalhe.
+
+### Exclusão de conta
+
+Fecha o CRUD que a Seção 1 pede: *"remoção dos mesmos **e da conta**"*. Ninguém tinha notado que faltava — não aparece nos critérios da Seção 5, o que explica o esquecimento.
+
+**A rota não tem `pk` e o `get_object()` devolve `request.user`.** Não há como apontá-la para outra conta: é mais forte que qualquer checagem de permissão, porque não existe nada a checar. O `logout()` roda antes do `delete()`.
+
+A tela de confirmação mostra os números do estrago antes de executar: quantos itens somem e **quantas reviews de outras pessoas morrem junto**. É o CASCADE saindo do papel — e há um teste provando que o André perde a review dele quando o Arthur apaga a conta, enquanto a conta do André sobrevive.
+
+### Estado final
+
+**62 testes**, `check` limpo, sem migração pendente. Os três apps do CRUD entregues: usuário, item e review.
+
+## 16. Tela de 404
+
+`templates/404.html`, encontrada automaticamente pelo Django quando `DEBUG=False`.
+
+**Ela não aparece em desenvolvimento.** Com `DEBUG=True` o Django mostra a própria página de debug, com a lista de rotas. Para ver a tela real é preciso `DEBUG=False` e `ALLOWED_HOSTS` preenchido — e nesse modo o `static()` para de servir as capas, porque ele só funciona sob `DEBUG`.
+
+## 17. Diálogo da sessão
 
 Mensagens do usuário na íntegra; respostas resumidas.
 
@@ -350,11 +434,35 @@ Mensagens do usuário na íntegra; respostas resumidas.
 **Eu:** "Atualize o arquivo ... colocando conversas contidas nessa sessão ... Depois disso crie uma tela para erro 404."
 **Claude:** Atualizei este documento com o diálogo e corrigi as partes que envelheceram. Criei a tela de 404 no tom do grimório (ver seção 16).
 
-## 16. Tela de 404
+**Eu:** "Agora vamos para a ultima etapa, me diga o que você sabe do que precisa ser implementado"
+**Claude:** Corrigi o enquadramento: não era uma etapa, eram duas (`Preferencia` e `Comentario`). E apontei um requisito esquecido — a Seção 1 exige exclusão de conta, que não estava em nenhuma fatia.
 
-`templates/404.html`, encontrada automaticamente pelo Django quando `DEBUG=False`.
+**Eu:** "Troque o nome de preferência para review. (...) o único item obrigatório é a nota, o comentário pode ser vazio."
+**Claude:** Listei o que isso muda: três divergências novas. Alertei que a contagem no card viraria N+1 se fosse `count()` no template, e que "admin apaga mas não edita" implica um mixin novo.
 
-**Ela não aparece em desenvolvimento.** Com `DEBUG=True` o Django mostra a própria página de debug, com a lista de rotas. Para ver a tela real é preciso `DEBUG=False` e `ALLOWED_HOSTS` preenchido — e nesse modo o `static()` para de servir as capas, porque ele só funciona sob `DEBUG`.
+**Eu:** "A review não conterá comentários acerca dela. Pode ser opiniao"
+**Claude:** Disse uma vez o preço: a atividade pede CRUD sobre quatro entidades e serão três; dois critérios da Seção 5 morrem. Registrei e não voltei ao assunto.
+
+**Eu:** "Sim, entra nesta fatia" (exclusão de conta)
+**Claude:** Perguntei duas vezes antes e tinha ficado sem resposta; usei um menu para não se perder de novo. A exclusão de conta entrou no escopo.
+
+**Eu:** "Página separada" / "Página de confirmação avisando o estrago"
+**Claude:** Fechei o design. Achei no caminho que o `DonoOuAdminMixin` tinha `criado_por` cravado e não serviria para a review, cujo dono é `usuario`.
+
+**Eu:** "fecha na A"
+**Claude:** Abordagem A: a view redireciona se já existe review. Documentei por extenso a armadilha do `UniqueConstraint` que a motiva — o Django pula a validação da restrição composta e a segunda review viraria 500.
+
+**Eu:** "fecha, pode escrever o spec"
+**Claude:** Escrevi o spec com as nove divergências acumuladas e uma tabela de cobertura da Seção 5, critério por critério. A auto-revisão pegou uma contradição minha e o partial no lugar errado.
+
+**Eu:** "aprovado, escreve o plano"
+**Claude:** Plano em seis tarefas, sem passos de commit. A auto-revisão pegou um import morto, um teste do spec que eu tinha esquecido, e contagens desatualizadas.
+
+**Eu:** "1"
+**Claude:** Subagentes por tarefa. O da Task 3 parou num defeito real do meu plano: um teste dela dependia de uma rota criada só na Task 4. Fechou em 62 testes.
+
+**Eu:** "Agora atualize o arquivo ... com as coisas novas e também com as novas conversas, seguindo o padrão que já existe no documento."
+**Claude:** Acrescentei a seção 15 (`Review` e exclusão de conta) e estas conversas. Renumerei para o diálogo ficar por último, como a abertura promete, e atualizei as pendências.
 
 ---
 
@@ -362,5 +470,7 @@ Mensagens do usuário na íntegra; respostas resumidas.
 
 - `docs/superpowers/specs/2026-07-14-login-cadastro-design.md` — design das telas de autenticação
 - `docs/superpowers/plans/2026-07-14-login-cadastro.md` — plano em 4 tarefas TDD
-- `docs/superpowers/specs/2026-07-14-catalogo-item-design.md` — design da fatia 1 do catálogo, com as 5 divergências e os riscos aceitos
+- `docs/superpowers/specs/2026-07-14-catalogo-item-design.md` — design da fatia 1 do catálogo
 - `docs/superpowers/plans/2026-07-14-catalogo-item.md` — plano em 5 tarefas TDD, sem passos de commit
+- `docs/superpowers/specs/2026-07-14-review-e-conta-design.md` — design da fatia final, com **as nove divergências e a tabela de cobertura da Seção 5**
+- `docs/superpowers/plans/2026-07-14-review-e-conta.md` — plano em 6 tarefas TDD, sem passos de commit

@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.core.validators import MaxValueValidator
 from django.db import models
 from django.urls import reverse
 
@@ -32,3 +33,35 @@ class Item(models.Model):
 
     def get_absolute_url(self):
         return reverse('catalogo:detalhe', kwargs={'pk': self.pk})
+
+
+class Review(models.Model):
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='reviews',
+        verbose_name='usuário',
+    )
+    item = models.ForeignKey(
+        Item,
+        on_delete=models.CASCADE,
+        related_name='reviews',
+        verbose_name='item',
+    )
+    nota = models.PositiveSmallIntegerField('nota (0 a 10)', validators=[MaxValueValidator(10)])
+    opiniao = models.TextField('opinião', blank=True)
+    data = models.DateTimeField('data', auto_now_add=True)
+
+    class Meta:
+        ordering = ('-data',)
+        verbose_name = 'review'
+        verbose_name_plural = 'reviews'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['usuario', 'item'],
+                name='review_unica_por_usuario_e_item',
+            ),
+        ]
+
+    def __str__(self):
+        return f'{self.usuario} — {self.item.titulo}: {self.nota}'

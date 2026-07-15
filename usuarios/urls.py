@@ -16,4 +16,5 @@ urlpatterns = [
     ),
     path('logout/', LogoutView.as_view(), name='logout'),
     path('cadastro/', views.CadastroView.as_view(), name='cadastro'),
+    path('conta/excluir/', views.ContaDeleteView.as_view(), name='conta_excluir'),
 ]
