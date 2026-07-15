@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block titulo %}{% if object %}Editar {{ object.titulo }}{% else %}Novo item{% endif %} — Gostoteca{% endblock %}
+
+{% block conteudo %}
+<main class="mx-auto max-w-2xl p-6">
+  <h1 class="mb-6 font-display text-3xl font-semibold tracking-tight text-cacau">
+    {% if object %}Editar item{% else %}Novo item{% endif %}
+  </h1>
+
+  <form method="post" enctype="multipart/form-data"
+        class="space-y-4 rounded-xl border border-areia bg-white p-6 shadow-sm">
+    {% csrf_token %}
+    {% for campo in form %}{% include '_campo.html' %}{% endfor %}
+    <div class="flex gap-3 border-t border-areia pt-5">
+      <button type="submit"
+              class="rounded-lg bg-cacau px-5 py-2 font-semibold text-areia transition-colors hover:bg-ferrugem">
+        Salvar
+      </button>
+      <a href="{% url 'catalogo:lista' %}"
+         class="rounded-lg px-4 py-2 font-medium text-ferrugem transition-colors hover:bg-areia/40">Cancelar</a>
+    </div>
+  </form>
+</main>
+{% endblock %}

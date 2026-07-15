@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block titulo %}Catálogo — Gostoteca{% endblock %}
+
+{% block conteudo %}
+<main class="mx-auto max-w-5xl p-6">
+  <div class="mb-8 flex items-end justify-between gap-4">
+    <div>
+      <h1 class="font-display text-3xl font-semibold tracking-tight text-cacau">Catálogo</h1>
+      <p class="mt-1 text-sm text-ferrugem">Jogos, filmes e livros reunidos por quem gosta deles.</p>
+    </div>
+    <a href="{% url 'catalogo:novo' %}"
+       class="shrink-0 rounded-lg bg-cacau px-4 py-2 text-sm font-semibold text-areia transition-colors hover:bg-ferrugem">
+      Novo item
+    </a>
+  </div>
+
+  {% if object_list %}
+    <ul class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      {% for item in object_list %}
+        <li>
+          <a href="{% url 'catalogo:detalhe' item.pk %}"
+             class="group block h-full overflow-hidden rounded-xl border border-areia bg-white shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-ambar hover:shadow-lg hover:shadow-ferrugem/15">
+            {% if item.capa %}
+              <img src="{{ item.capa.url }}" alt="" class="h-44 w-full object-cover">
+            {% else %}
+              <div class="flex h-44 w-full items-center justify-center bg-gradient-to-br from-areia to-ambar">
+                <span class="font-display text-5xl font-semibold text-cacau/30">
+                  {{ item.titulo|first|upper }}
+                </span>
+              </div>
+            {% endif %}
+
+            <div class="p-4">
+              <span class="inline-block rounded-full bg-areia/60 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-ferrugem">
+                {{ item.get_tipo_display }}
+              </span>
+              <h2 class="mt-2 font-display text-lg font-semibold leading-tight text-cacau group-hover:text-ferrugem">
+                {{ item.titulo }}
+              </h2>
+              <p class="mt-0.5 text-sm text-ferrugem/80">{{ item.ano }}</p>
+            </div>
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <div class="rounded-xl border border-dashed border-ambar/50 bg-white/60 p-12 text-center">
+      <p class="font-display text-lg text-cacau">O catálogo ainda está vazio.</p>
+      <p class="mt-1 text-sm text-ferrugem">Cadastre o primeiro item e comece a coleção.</p>
+    </div>
+  {% endif %}
+</main>
+{% endblock %}

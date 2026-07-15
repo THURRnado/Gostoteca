@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titulo %}Gostoteca{% endblock %}</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Karla:wght@400;500;600&display=swap">
+
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+  <style type="text/tailwindcss">
+    @theme {
+      /* Paleta do projeto */
+      --color-areia: #F2CC85;
+      --color-mel: #F29A2E;
+      --color-ambar: #D97B29;
+      --color-ferrugem: #A64B17;
+      --color-cacau: #401201;
+      /* Tom claro derivado da areia, para fundo e superficies */
+      --color-pergaminho: #FDF8F0;
+
+      --font-display: 'Fraunces', Georgia, serif;
+      --font-corpo: 'Karla', system-ui, sans-serif;
+    }
+  </style>
+
+  <style>
+    body {
+      background-image:
+        radial-gradient(ellipse 70% 45% at 50% -8%, rgba(242, 154, 46, 0.20), transparent 70%);
+      background-attachment: fixed;
+    }
+
+    @keyframes brilho {
+      0%, 100% { opacity: 0.35; transform: scale(0.75); }
+      50%      { opacity: 1;    transform: scale(1.1); }
+    }
+
+    .faisca {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: brilho 3s ease-in-out infinite;
+    }
+    .faisca-2 { animation-delay: 1.4s; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .faisca { animation: none; opacity: 1; }
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-pergaminho font-corpo text-cacau">
+  {% if user.is_authenticated %}
+    <header class="sticky top-0 z-10 bg-cacau">
+      <div class="mx-auto flex max-w-5xl items-center gap-4 px-6 py-3">
+        <a href="{% url 'catalogo:lista' %}" class="group mr-auto flex items-center gap-2.5 text-areia">
+          {% include '_marca.html' with classes="h-8 w-8 transition-transform duration-300 group-hover:-rotate-6" %}
+          <span class="font-display text-[20px] font-semibold tracking-tight">Gostoteca</span>
+        </a>
+
+        <span class="text-sm text-areia/70">{{ user.username }}</span>
+
+        <form method="post" action="{% url 'logout' %}">
+          {% csrf_token %}
+          <button type="submit"
+                  class="text-sm font-medium text-areia/90 underline decoration-ambar decoration-2 underline-offset-4 hover:text-areia">
+            Sair
+          </button>
+        </form>
+      </div>
+
+      <div class="h-0.5 bg-gradient-to-r from-ferrugem via-mel to-ferrugem"></div>
+    </header>
+  {% endif %}
+
+  {% block conteudo %}{% endblock %}
+</body>
+</html>

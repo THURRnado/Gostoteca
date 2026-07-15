@@ -1,6 +1,8 @@
 # Resumo da sessão — 2026-07-14
 
-Registro do que foi decidido e construído na sessão que partiu do documento da Atividade 03 e terminou com as telas de autenticação prontas. Serve de matéria-prima para o relatório final e de memória das decisões que não são óbvias olhando só o código.
+Registro do que foi decidido e construído na sessão que partiu do documento da Atividade 03 e chegou até a primeira fatia do catálogo com identidade visual aplicada. Serve de matéria-prima para o relatório final e de memória das decisões que não são óbvias olhando só o código.
+
+As seções 1 a 11 são o registro de decisões. A seção 15, no fim, traz o diálogo da sessão em ordem cronológica.
 
 ---
 
@@ -39,7 +41,7 @@ Duas descobertas ao confrontar o documento com o que o `AbstractUser` já oferec
 - **`data_cadastro` já existe** como `date_joined`. Mesmo tipo, mesmo propósito, preenchido automaticamente. **Não foi duplicado** — criar o campo ao lado geraria dois dados que podem divergir. Registrar essa equivalência no relatório.
 - **`email` precisou de override.** O documento pede único e obrigatório; o `AbstractUser` o define opcional e **não** único. Este é o único campo que o modelo redefine.
 
-O `papel` (comum/admin) **não virou coluna** — sai dos Groups do Django, como o próprio documento previu.
+O `papel` (comum/admin) **não virou coluna**. Na época desta decisão a intenção era resolvê-lo pelos Groups do Django, como o documento previu — mas na fatia do catálogo isso mudou para `is_staff` (ver seção 12).
 
 Resultado:
 
@@ -145,26 +147,220 @@ Correção: `<p>` → `<div>`.
 
 O CSRF foi verificado com `Client(enforce_csrf_checks=True)` — o test client do Django relaxa CSRF por padrão, então sem isso a suíte poderia estar passando por acidente.
 
-## 10. Pendências
+## 10. Pendências (estado ao fim da sessão)
 
 Em ordem de importância para a nota:
 
-1. **"Rotas protegidas exigem login" (Seção 5) não está implementado nem testado.** Não há um único `login_required` ou `LoginRequiredMixin` no projeto; o `LOGIN_URL` é config morta hoje. Adiar foi correto — não existe rota protegível enquanto o `catalogo` não existir —, mas o item precisa aterrissar junto com o app: `LoginRequiredMixin` na primeira view do catálogo e um teste "anônimo em `/catalogo/` → 302 para `/login/?next=/catalogo/`".
-2. **O `.docx` diz Bootstrap; o código usa Tailwind.** Corrigir o documento ou registrar no relatório.
-3. **Falta teste de username duplicado.** O comportamento está correto, mas sem teste — e a tabela de erros do spec o lista. São 6 linhas.
-4. **`cadastro.html` não tem o bloco de `non_field_errors`** que o `login.html` tem. Inofensivo hoje (os erros do `UserCreationForm` são todos de campo), mas um `clean()` futuro falharia em silêncio.
-5. **Superusuário ainda não criado** (`python manage.py createsuperuser`).
-6. **`.gitattributes`** para normalizar LF/CRLF, se o André estiver em Linux ou macOS.
-7. **`TIME_ZONE` está `America/Sao_Paulo`**; o fuso canônico da Paraíba é `America/Fortaleza`. Mesmo UTC−3, histórias de horário de verão diferentes. Cosmético.
-8. **`docker compose up` nunca foi testado.**
+1. **O `.docx` está defasado em cinco pontos.** Bootstrap→Tailwind; qualquer usuário cria itens; `capa_url` texto→upload; "remoção de item em uso é bloqueada" não implementado; `papel` via Group→`is_staff`. Corrigir o documento ou registrar tudo no relatório. **A quarta é a que custa nota:** é um critério escrito da Seção 5 que ficará sem implementação e sem teste (ver seção 12).
+2. **Falta teste de username duplicado.** O comportamento está correto, mas sem teste — e a tabela de erros do spec o lista. São 6 linhas.
+3. **`cadastro.html` não tem o bloco de `non_field_errors`** que o `login.html` tem. Inofensivo hoje (os erros do `UserCreationForm` são todos de campo), mas um `clean()` futuro falharia em silêncio.
+4. **Superusuário ainda não criado** (`python manage.py createsuperuser`).
+5. **`.gitattributes`** para normalizar LF/CRLF, se o André estiver em Linux ou macOS.
+6. **`TIME_ZONE` está `America/Sao_Paulo`**; o fuso canônico da Paraíba é `America/Fortaleza`. Mesmo UTC−3, histórias de horário de verão diferentes. Cosmético.
+7. **`docker compose up` nunca foi testado.** O `docker compose config` valida, mas a imagem nunca foi construída.
+8. **Fatias 2 e 3 do catálogo** — `Preferencia` e `Comentario` — ainda não começaram.
 
-## 11. Consequência conhecida e temporária
+**Resolvido durante a sessão:** "rotas protegidas exigem login" (Seção 5) era a pendência número 1 e foi fechada na fatia 1 do catálogo, com `LoginRequiredMixin` nas cinco views e um teste de anônimo → 302 para `/login/?next=`.
 
-Enquanto o `catalogo` não existir, o cabeçalho com o botão "Sair" só é visível em `/cadastro/`. Motivo: a `LoginView` tem `redirect_authenticated_user=True`, então um usuário logado que abrir `/login/` é mandado para `/catalogo/` (404) — e não sobra nenhuma outra página que ele consiga abrir. Some sozinho quando a home do catálogo existir.
+## 11. Consequência conhecida — resolvida
+
+Enquanto o `catalogo` não existia, o cabeçalho com o botão "Sair" só era visível em `/cadastro/`: a `LoginView` tem `redirect_authenticated_user=True`, então um usuário logado que abrisse `/login/` era mandado para `/catalogo/`, que dava 404 — e não sobrava nenhuma outra página. **Sumiu sozinho quando a lista do catálogo passou a existir**, exatamente como previsto.
+
+## 12. App `catalogo` — fatia 1 de 3
+
+O `catalogo` carrega quase todo o resto do projeto: três dos quatro modelos e quatro dos cinco critérios da Seção 5. Grande demais para uma tarefa só, foi fatiado em três: **(1)** `Item` + lista + detalhe + CRUD + autorização — *feito*; **(2)** `Preferencia`; **(3)** `Comentario`.
+
+### Mudanças no modelo de permissão
+
+O documento diz que o administrador gerencia o catálogo e anota `criado_por` como "FK → usuario (**admin**)". Isso foi trocado por decisão do usuário:
+
+| Ação sobre um item | Quem pode |
+|---|---|
+| Criar | Qualquer usuário logado |
+| Ver | Qualquer usuário logado |
+| Editar | Dono ou admin |
+| Excluir | Dono ou admin |
+
+Essa mudança **resolveu de graça a maior dúvida de escopo do projeto**: se o CRUD de item sairia pelo Django Admin. Não sai — se usuário comum cria itens e a Seção 5 diz que ele não acessa a administração, o CRUD tem que ser telas próprias.
+
+### "Admin" significa `is_staff`
+
+O documento diz `papel | enum (comum, admin) | via Group do Django`. Foi trocado por `is_staff` porque a Seção 5 também exige que "usuário comum não acessa a administração" — e o acesso ao `/admin/` é controlado por `is_staff`, não por Groups. Com Group, existiriam **duas noções de admin que podem divergir**: alguém no grupo mas com `is_staff=False` excluiria qualquer item e ainda levaria 403 no `/admin/`.
+
+### O `DonoOuAdminMixin` e o presente do `AccessMixin`
+
+```python
+class DonoOuAdminMixin(UserPassesTestMixin):
+    def test_func(self):
+        return self.get_object().criado_por == self.request.user or self.request.user.is_staff
+```
+
+O `handle_no_permission()` do `AccessMixin` faz `if self.raise_exception or self.request.user.is_authenticated: raise PermissionDenied`. Ou seja, **sem configurar nada**: anônimo é redirecionado ao login, logado-não-dono leva 403. É literalmente o que a Seção 6 pede ("usuário comum recebe 403/redirecionamento"), de graça.
+
+`LoginRequiredMixin` vem **antes** na MRO, para o anônimo ser barrado antes de o `test_func` ir ao banco.
+
+### O CASCADE e o critério que ele derruba
+
+`Usuario` → `Item` → `Preferencia`, todos CASCADE, por escolha consciente do usuário. Duas consequências registradas como risco aceito:
+
+- **"Remoção de item em uso é bloqueada" (Seção 5) não será implementado.** A Seção 6 exige um teste por critério; este ficará sem implementação e sem teste. A saída limpa é remover o critério do `.docx`.
+- **Excluir a conta apaga dados de terceiros.** Quem sai leva os próprios itens e as preferências que outras pessoas tinham neles.
+
+### Upload da capa
+
+`capa_url texto` (documento) virou `capa` como `ImageField`. Consequências: **Pillow** entrou como primeira dependência de terceiros; o campo foi renomeado (`capa_url` mentiria sobre o conteúdo); e o `urls.py` ganhou `static(settings.MEDIA_URL, ...)` sob `DEBUG`.
+
+Duas armadilhas documentadas no plano, ambas silenciosas:
+
+- **`enctype="multipart/form-data"` no form.** Sem isso o navegador manda o nome do arquivo, não os bytes — e a capa nunca chega, sem erro nenhum.
+- **`static()` no `urls.py`.** Sem isso o upload grava mas a imagem não aparece — o sintoma parece bug de upload e é roteamento.
+
+E nos testes: **`@override_settings(MEDIA_ROOT=<tempdir>)` não é opcional** — sem isso a suíte grava arquivos de verdade na `media/` a cada execução, inclusive no CI.
+
+### Dívida técnica paga
+
+`LOGIN_REDIRECT_URL` deixou de ser o caminho literal `'/catalogo/'` e virou `reverse_lazy('catalogo:lista')`. Precisa ser `reverse_lazy` e não `reverse`: o `settings.py` carrega antes das URLs.
+
+## 13. Identidade visual
+
+Paleta definida a partir de uma imagem fornecida pelo usuário, aplicada via `@theme` do Tailwind v4:
+
+| Nome | Hex | Uso |
+|---|---|---|
+| `areia` | `#F2CC85` | Texto sobre cacau, bordas, selos |
+| `mel` | `#F29A2E` | Acento (linha dourada, foco) |
+| `ambar` | `#D97B29` | Bordas de input, hover |
+| `ferrugem` | `#A64B17` | Texto secundário, hover de botão |
+| `cacau` | `#401201` | Texto principal, navbar, botão primário |
+| `pergaminho` | `#FDF8F0` | Fundo de página — **derivado, não estava na imagem** |
+
+**A sexta cor foi acrescentada por necessidade:** cinco tons saturados não constroem uma interface, falta fundo e superfície.
+
+**Erros continuam em vermelho**, fora da paleta. Ferrugem e cacau já são avermelhados; usar um deles para erro tornaria o erro indistinguível do botão primário.
+
+Direção estética: **grimório / biblioteca alquímica** — pergaminho, luz de vela, dourado. Tipografia **Fraunces** (display) + **Karla** (corpo), via Google Fonts. A navbar é cacau com uma linha em degradê ferrugem→mel→ferrugem embaixo, imitando o corte dourado de um livro antigo.
+
+**Terceira dependência de internet.** O Google Fonts entrou junto do Play CDN do Tailwind. Sem rede, a apresentação perde fonte e estilo.
+
+A marca (livro aberto com faíscas) vive em `templates/_marca.html` e usa `currentColor`, então serve sobre o cacau da navbar e sobre o pergaminho do login.
+
+## 14. O que o processo pegou
+
+Cinco defeitos que não teriam aparecido sem verificação — vale registrar porque três eram erros meus:
+
+1. **`<ul>` dentro de `<p>`.** O `help_text` do `password1` é uma `<ul>`; o partial a envolvia num `<p>`, que é HTML inválido. O navegador quebrava a estrutura e a lista de regras de senha saía sem estilo. **Só apareceu na inspeção do DOM** — os testes não pegariam, e um implementador havia afirmado que o campo era vazio sem ter renderizado.
+2. **Spec mentindo sobre cobertura.** O spec de autenticação afirmava cobrir a Seção 5, mas "rotas protegidas" não estava implementado. Um spec que se declara completo é como esse tipo de item se perde.
+3. **Plano com o baseline errado.** Dizia 8 testes onde eram 10. O subagente **parou e perguntou em vez de adivinhar** — se tivesse seguido, os passos posteriores checariam contagens erradas.
+4. **Lixo declarado como removido.** Um implementador afirmou ter apagado um `.claude/launch.json` e não apagou; a revisão de spec também não pegou. Apareceu num `git status` manual.
+5. **Faíscas invisíveis.** A primeira versão do ícone tinha faíscas de 3 a 4 pixels na navbar — sumiam, e sobrava um livro comum. O código estava "correto" nas duas versões; só a tela mostrou.
+
+O padrão: **os testes provam comportamento, não aparência nem asseio.** Todo defeito visual e toda sujeira exigiram olhar de fato.
+
+## 15. Diálogo da sessão
+
+Mensagens do usuário na íntegra; respostas resumidas.
+
+**Eu:** "Leia o documento que está dentro dessa pasta, me diga o que entendeu do que foi especificado."
+**Claude:** Li o `.docx` e resumi: catálogo de mídia com camada social, dois papéis, CRUD sobre quatro entidades, stack Python/Django/SQLite/Bootstrap, critérios nas Seções 5 e 6. A pasta só tinha o documento, sem código.
+
+**Eu:** "Me dê ideias de um bom nome para esse projeto"
+**Claude:** Propus nomes por vibe — Acervo, Coletânea, Resenha, Nota 10, Gosto Comum — recomendando Coletânea, que cobre os três tipos de mídia sem listar nenhum.
+
+**Eu:** "Gosto de nomes que são junções de dois termos, me dê ideias"
+**Claude:** Ofereci portmanteaus: Socervo, Gostoteca, Gostário, Opinário, Resenharia. Recomendei Gostário. Alertei que Midiateca e Ludoteca já existem com significado próprio.
+
+**Eu:** "Agora me ajude a iniciar um projeto django. Me fale o passo a passo"
+**Claude:** Checei o ambiente (Python 3.13.9, Git 2.52, Django ausente) e dei oito passos. Enfatizei criar o modelo de usuário customizado **antes** do primeiro `migrate` — trocar depois é notoriamente difícil.
+
+**Eu:** "Me explique o porquê de cada app"
+**Claude:** Expliquei a responsabilidade de cada um e admiti que quatro apps para quatro tabelas é over-engineering. Recomendei três, com dois como alternativa enxuta.
+
+**Eu:** "prefiro usuarios e catalogo"
+**Claude:** Ajustei os comandos. Avisei que `catalogo/models.py` concentraria três modelos, e que a saída futura é quebrar as views em pacote, não criar apps novos.
+
+**Eu:** "Analise como está a estrutura do projeto agora. Então vamos começar a mexer no app 'usuarios'"
+**Claude:** Projeto criado, apps registrados, `migrate` ainda não rodado — o momento exato para o modelo customizado. Descobri que `data_cadastro` já existe como `date_joined` e que o `email` precisava de override.
+
+**Eu:** "Faça somente o .gitignore, o arquivo ci/cd e o docker compose"
+**Claude:** Criei os três, mais Dockerfile e `.dockerignore` (o compose não funciona sem eles). Encontrei 4 erros E304: o `Usuario` existia sem `AUTH_USER_MODEL`, e a dica do próprio Django apontava a correção errada.
+
+**Eu:** "Sim"
+**Claude:** Adicionei o `AUTH_USER_MODEL` e rodei a primeira migração. `check` limpo, e `get_user_model()` confirmando `usuarios.Usuario` com email único e obrigatório.
+
+**Eu:** "registre o Usuario no admin e crie o superusuário"
+**Claude:** Registrei com `UserAdmin`, não `ModelAdmin` — senão o campo de senha vira texto puro e dá para salvar sem hash. **Recusei criar o superusuário:** exige senha, e a senha é sua.
+
+**Eu:** "Antes de ir para o catalogo, quero criar tela de login e cadastro em usuarios"
+**Claude:** Entrei em brainstorming e apontei o bloqueio: não existia página nenhuma além do `/admin/`, então o login não tinha para onde redirecionar.
+
+**Eu:** "Esperar o catalogo" / "Não quero usar bootstrap, quero usar tailwind css" / "Play CDN"
+**Claude:** Registrei. Corrigi meu próprio pessimismo — o fluxo era testável sem seguir o redirect. Sinalizei a divergência com a Seção 2 e que o Play CDN exige internet.
+
+**Eu:** "Vamos com a opção A"
+**Claude:** Apresentei o design: `LoginView`/`LogoutView` do Django e uma `CreateView`, com form próprio por causa do email. Alertei que a `LogoutView` do Django 5+ só aceita POST e devolve 405 no GET.
+
+**Eu:** "Sim" / "Pode iniciar"
+**Claude:** Escrevi o spec, fiz `git init`, o primeiro commit, e o plano em quatro tarefas TDD. Registrei o desvio do `LoginForm`, necessário porque o Tailwind não estiliza tags nuas.
+
+**Eu:** "Vamos com a opção 1"
+**Claude:** Criei uma branch e despachei um subagente por tarefa, com duas revisões cada. Elas pegaram um bug real: `<ul>` dentro de `<p>` no help_text, invisível para os testes.
+
+**Eu:** "Manter a branch como está"
+**Claude:** Deixei os seis commits na branch. A revisão final achou um erro meu — o spec dizia cobrir a Seção 5, mas "rotas protegidas" não estava implementado. Corrigi o spec.
+
+**Eu:** "Ao realizar as implementações, esqueça commits e etc, eu cuido disso"
+**Claude:** Salvei na memória, anotando onde mora o atrito: as skills do superpowers commitam sozinhas, então preciso omitir os passos de commit dos planos e instruir cada subagente explicitamente.
+
+**Eu:** "Crie para mim agora um readme.md com uma explicação básica do que se trata o projeto e como rodar ele"
+**Claude:** Criei o README. Avisei que **nunca executei o `docker compose up`** — as instruções de Docker são corretas em teoria, não verificadas na prática.
+
+**Eu:** "Gere um arquivo markdown dessa conversa e das principais ideias contidas nela"
+**Claude:** Escrevi este documento como registro de decisões, não transcrição — o que tem valor daqui a semanas são os porquês, não o passo a passo.
+
+**Eu:** "Vamos mexer no app 'catalago agora'. Me fale o que você entendo do que precisa ser incluido nesse app até agora."
+**Claude:** Expliquei que o `catalogo` carrega quase todo o resto: três modelos e quatro critérios. Recomendei fatiar em três e levantei cinco ambiguidades do documento que eu não podia resolver sozinho.
+
+**Eu:** "Todo usuário pode cadastrar um item, não só o admin. Porém cada usuário só pode excluir seu próprio item, o admin pode excluir qualquer item"
+**Claude:** Sinalizei que isso diverge do documento em três pontos. Notei que a mudança resolve de graça a dúvida do Django Admin: o CRUD tem que ser telas próprias.
+
+**Eu:** "Dono ou admin" / "Sim — exclui e leva as preferências junto"
+**Claude:** Avisei **uma vez** que o CASCADE derruba um critério testável da Seção 5 e apaga dados de terceiros. Você manteve; registrei como risco aceito e não voltei ao assunto.
+
+**Eu:** "upload na capa. o usuário pode comentar a própria preferencia."
+**Claude:** Listei as consequências: Pillow vira dependência, `capa_url` vira `capa`, e o `urls.py` precisa servir media. Quarta divergência do documento.
+
+**Eu:** "pode levar" / "is_staff" / "Lista + detalhe"
+**Claude:** Fechei o design e escrevi o spec com cinco divergências registradas. Alertei que `is_staff` contraria a Seção 4, mas evita duas noções de admin divergindo entre si.
+
+**Eu:** "aprovado, escreve o plano"
+**Claude:** Escrevi o plano em cinco tarefas, **sem passos de commit** conforme sua instrução. Documentei as armadilhas do `enctype` e do `static()` para media.
+
+**Eu:** "1"
+**Claude:** Despachei os subagentes. O da Task 1 parou e perguntou: o plano dizia 8 testes de baseline, eram 10. O erro era meu; corrigi o plano e as contagens seguintes.
+
+**Eu:** "Retome de onde parou"
+**Claude:** Como você interrompeu o revisor de qualidade, fiz a revisão eu mesmo em vez de reenviá-lo. Achei um `.claude/launch.json` que o subagente da Task 3 jurou ter apagado.
+
+**Eu:** [imagem da paleta] "Use a paleta de cores contida na imagem para o projeto. Crie uma navbar com o icon de um livro aberto meio mágico e o nome catálogo ao lado, deixe a fonte por volta de uns 20px."
+**Claude:** Apliquei a paleta via `@theme` do Tailwind v4 e criei a navbar. Direção estética: grimório — Fraunces e Karla, cacau com corte dourado. Acrescentei uma sexta cor derivada para o fundo.
+
+**Eu:** "Errei algo, o nome não é catálogo e sim 'Gostoteca', corrija isso e continue"
+**Claude:** Corrigi nos três lugares. Refiz o ícone: as faíscas tinham 3px e sumiam na navbar. Agora são duas, maiores, e extraí o SVG para um partial — estava triplicado.
+
+**Eu:** "Atualize o arquivo ... colocando conversas contidas nessa sessão ... Depois disso crie uma tela para erro 404."
+**Claude:** Atualizei este documento com o diálogo e corrigi as partes que envelheceram. Criei a tela de 404 no tom do grimório (ver seção 16).
+
+## 16. Tela de 404
+
+`templates/404.html`, encontrada automaticamente pelo Django quando `DEBUG=False`.
+
+**Ela não aparece em desenvolvimento.** Com `DEBUG=True` o Django mostra a própria página de debug, com a lista de rotas. Para ver a tela real é preciso `DEBUG=False` e `ALLOWED_HOSTS` preenchido — e nesse modo o `static()` para de servir as capas, porque ele só funciona sob `DEBUG`.
 
 ---
 
 ## Documentos relacionados
 
-- `docs/superpowers/specs/2026-07-14-login-cadastro-design.md` — design das telas de autenticação, com as divergências e riscos aceitos
-- `docs/superpowers/plans/2026-07-14-login-cadastro.md` — plano de implementação em 4 tarefas TDD
+- `docs/superpowers/specs/2026-07-14-login-cadastro-design.md` — design das telas de autenticação
+- `docs/superpowers/plans/2026-07-14-login-cadastro.md` — plano em 4 tarefas TDD
+- `docs/superpowers/specs/2026-07-14-catalogo-item-design.md` — design da fatia 1 do catálogo, com as 5 divergências e os riscos aceitos
+- `docs/superpowers/plans/2026-07-14-catalogo-item.md` — plano em 5 tarefas TDD, sem passos de commit

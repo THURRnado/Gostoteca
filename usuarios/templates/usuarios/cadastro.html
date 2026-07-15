@@ -1,22 +1,33 @@
-{% extends 'usuarios/base.html' %}
+{% extends 'base.html' %}
 
 {% block titulo %}Criar conta — Gostoteca{% endblock %}
 
 {% block conteudo %}
-<main class="w-full max-w-sm bg-white rounded-xl shadow-sm p-8">
-  <h1 class="text-2xl font-semibold text-slate-900 mb-6">Criar conta</h1>
+<div class="flex min-h-screen items-center justify-center p-4">
+  <main class="w-full max-w-sm">
+    <div class="mb-6 flex flex-col items-center gap-2 text-ferrugem">
+      {% include '_marca.html' with classes="h-14 w-14" %}
+      <span class="font-display text-[20px] font-semibold tracking-tight text-cacau">Gostoteca</span>
+    </div>
 
-  <form method="post" class="space-y-4">
-    {% csrf_token %}
-    {% for campo in form %}{% include 'usuarios/_campo.html' %}{% endfor %}
-    <button type="submit"
-            class="w-full rounded-lg bg-slate-900 py-2 font-medium text-white hover:bg-slate-700">
-      Cadastrar
-    </button>
-  </form>
+    <div class="rounded-xl border border-areia bg-white p-8 shadow-sm">
+      <h1 class="mb-6 font-display text-2xl font-semibold text-cacau">Criar conta</h1>
 
-  <p class="mt-6 text-center text-sm text-slate-600">
-    Já tem conta? <a href="{% url 'login' %}" class="text-slate-900 underline">Entrar</a>
-  </p>
-</main>
+      <form method="post" class="space-y-4">
+        {% csrf_token %}
+        {% for campo in form %}{% include '_campo.html' %}{% endfor %}
+        <button type="submit"
+                class="w-full rounded-lg bg-cacau py-2.5 font-semibold text-areia transition-colors hover:bg-ferrugem">
+          Cadastrar
+        </button>
+      </form>
+
+      <p class="mt-6 text-center text-sm text-ferrugem">
+        Já tem conta?
+        <a href="{% url 'login' %}"
+           class="font-medium text-cacau underline decoration-ambar decoration-2 underline-offset-4">Entrar</a>
+      </p>
+    </div>
+  </main>
+</div>
 {% endblock %}

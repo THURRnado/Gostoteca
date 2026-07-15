@@ -3,12 +3,13 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from .models import Usuario
 
 CLASSES_INPUT = (
-    'w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 '
-    'placeholder-slate-400 focus:border-slate-900 focus:outline-none'
+    'w-full rounded-lg border border-ambar/40 bg-white px-3 py-2 text-cacau '
+    'placeholder-ferrugem/40 focus:border-ferrugem focus:outline-none '
+    'focus:ring-2 focus:ring-mel/40'
 )
 
 
-class _FormEstilizado:
+class FormEstilizado:
     """Aplica as classes do Tailwind nos widgets, que o Django renderiza sem classe."""
 
     def __init__(self, *args, **kwargs):
@@ -17,11 +18,11 @@ class _FormEstilizado:
             campo.widget.attrs['class'] = CLASSES_INPUT
 
 
-class UsuarioCreationForm(_FormEstilizado, UserCreationForm):
+class UsuarioCreationForm(FormEstilizado, UserCreationForm):
     class Meta(UserCreationForm.Meta):
         model = Usuario
         fields = ('username', 'email')
 
 
-class LoginForm(_FormEstilizado, AuthenticationForm):
+class LoginForm(FormEstilizado, AuthenticationForm):
     pass

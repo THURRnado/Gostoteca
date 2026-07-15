@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block titulo %}Página não encontrada — Gostoteca{% endblock %}
+
+{% block conteudo %}
+<main class="mx-auto flex max-w-md flex-col items-center px-6 py-20 text-center">
+  <div class="text-ambar/50">
+    {% include '_marca.html' with classes="h-20 w-20" %}
+  </div>
+
+  <p class="mt-6 font-display text-6xl font-semibold leading-none text-cacau">404</p>
+
+  <h1 class="mt-3 font-display text-2xl font-semibold text-cacau">
+    Esta página não está no acervo
+  </h1>
+
+  <p class="mt-3 leading-relaxed text-ferrugem">
+    O endereço que você abriu não existe, ou o item que estava aqui foi removido do catálogo.
+  </p>
+
+  <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
+    <a href="{% url 'catalogo:lista' %}"
+       class="rounded-lg bg-cacau px-5 py-2.5 font-semibold text-areia transition-colors hover:bg-ferrugem">
+      Ir para o catálogo
+    </a>
+    <a href="{% url 'login' %}"
+       class="rounded-lg px-4 py-2.5 font-medium text-ferrugem transition-colors hover:bg-areia/40">
+      Entrar
+    </a>
+  </div>
+</main>
+{% endblock %}

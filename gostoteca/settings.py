@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from pathlib import Path
 
+from django.urls import reverse_lazy
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -56,7 +58,7 @@ ROOT_URLCONF = 'gostoteca.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -85,7 +87,7 @@ DATABASES = {
 AUTH_USER_MODEL = 'usuarios.Usuario'
 
 LOGIN_URL = 'login'
-LOGIN_REDIRECT_URL = '/catalogo/'  # Caminho literal: o app catalogo ainda nao existe.
+LOGIN_REDIRECT_URL = reverse_lazy('catalogo:lista')
 LOGOUT_REDIRECT_URL = 'login'
 
 

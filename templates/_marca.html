@@ -1,0 +1,18 @@
+{% comment %}
+Marca do Gostoteca: livro aberto com faiscas.
+
+Uso: {% include '_marca.html' with classes="h-8 w-8 text-areia" %}
+A cor vem do `text-*` do chamador — livro e faiscas usam currentColor,
+entao a marca funciona tanto sobre o cacau da navbar quanto sobre o pergaminho.
+{% endcomment %}
+<svg viewBox="0 0 32 32" aria-hidden="true" fill="none" stroke="currentColor"
+     stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
+     class="{{ classes|default:'h-8 w-8' }} shrink-0">
+  <path d="M16 14C14 12 11 11 7 11C5.8 11 4.6 11.1 3.5 11.3V25.8C4.6 25.6 5.8 25.5 7 25.5C11 25.5 14 26.5 16 28.5"/>
+  <path d="M16 14C18 12 21 11 25 11C26.2 11 27.4 11.1 28.5 11.3V25.8C27.4 25.6 26.2 25.5 25 25.5C21 25.5 18 26.5 16 28.5"/>
+  <path d="M16 14V28.5"/>
+  <path class="faisca" fill="currentColor" stroke="none"
+        d="M16 2C16.4 5.6 17.4 6.6 21 7C17.4 7.4 16.4 8.4 16 12C15.6 8.4 14.6 7.4 11 7C14.6 6.6 15.6 5.6 16 2Z"/>
+  <path class="faisca faisca-2" fill="currentColor" stroke="none"
+        d="M25.5 3.5C25.78 6.02 26.48 6.72 29 7C26.48 7.28 25.78 7.98 25.5 10.5C25.22 7.98 24.52 7.28 22 7C24.52 6.72 25.22 6.02 25.5 3.5Z"/>
+</svg>
