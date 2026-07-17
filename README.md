@@ -7,6 +7,9 @@ Cada usuário registra suas preferências a partir de um catálogo de itens, atr
 Trabalho da disciplina Tópicos Avançados XI (UFPB) — Atividade 03: Aplicação CRUD.
 Autores: Arthur Vieira e André Lopes.
 
+Link do vídeo de apresentação: https://www.youtube.com/watch?v=_3hwFhDraFM
+O Relatório do projeto se encontra em `docs/Relatório do desenvolvimento da aplicação Gostoteca com agentes, experiência do grupo e plano de testes.pdf`
+
 ## Tecnologias
 
 - Python 3.13 e Django 6.0
